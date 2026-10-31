@@ -3,10 +3,12 @@ import random  # CORRIGIDO: movido para o topo
 personagem = {
     "nome": "Gandalf",
     "classe": "Mago",
-    "nivel": 10,
-    "vida": 100,
-    "vida_max": 100,
-    "mana": 50
+    "nivel": 1,
+    "vida": 10,
+    "vida_max": 10,
+    "mana": 10,
+    "xp": 0,
+    "xp_proximo_nivel": 50
 }
 
 
@@ -19,14 +21,15 @@ inventario = [item_1, item_2, item_3]
 
 # CORRIGIDO: movido para antes do menu
 monstros = [
-    {"nome": "Goblin", "vida": 30, "dano": 5, "dano-max": 10},
-    {"nome": "Orc", "vida": 50, "dano": 10, "dano-max": 20},
-    {"nome": "Troll", "vida": 80, "dano": 15, "dano-max": 30}]
+    {"nome": "Goblin", "vida": 30, "dano": 5, "dano-max": 10, "xp": 20},
+    {"nome": "Orc", "vida": 50, "dano": 10, "dano-max": 20, "xp": 50},
+    {"nome": "Troll", "vida": 80, "dano": 15, "dano-max": 30, "xp": 100}]
 
 
 def mostrar_ficha(personagem):
     print(f"=== {personagem['nome']} | {personagem['classe']} | Nível {personagem['nivel']} ===")
     print(f"Vida: {personagem['vida']}/{personagem['vida_max']} | Mana: {personagem['mana']}")
+    print(f"XP: {personagem['xp']}/{personagem['xp_proximo_nivel']}")  # MELHORIA: mostra o XP na ficha
 
 
 def mostrar_inventario(inventario):
@@ -45,6 +48,24 @@ def usar_pocao(personagem, inventario):
     print("Você não tem poções!")
 
 
+def subir_nivel(personagem):
+    while personagem["xp"] >= personagem["xp_proximo_nivel"]:
+        personagem["nivel"] += 1
+        personagem["vida_max"] += 10
+        personagem["vida"] = personagem["vida_max"]
+        personagem["mana"] += 5
+        personagem["xp"] -= personagem["xp_proximo_nivel"]
+        personagem["xp_proximo_nivel"] = int(personagem["xp_proximo_nivel"] * 1.5)
+        print(f"🎉 Parabéns! Você subiu para o nível {personagem['nivel']}!")
+        print(f"Vida máxima aumentada para {personagem['vida_max']}. Mana aumentada para {personagem['mana']}.")
+
+
+def ganhar_xp(personagem, xp):
+    personagem["xp"] += xp
+    print(f"Você ganhou {xp} pontos de experiência!")
+    subir_nivel(personagem)
+
+
 # CORRIGIDO: a função batalha agora fica antes do menu
 def batalha(personagem, monstro):
     print(f"\nVocê encontrou um {monstro['nome']}!")
@@ -56,6 +77,7 @@ def batalha(personagem, monstro):
             print(f"Você atacou o {monstro['nome']} causando {dano_personagem} de dano!")
             if monstro["vida"] <= 0:
                 print(f"Você derrotou o {monstro['nome']}!")
+                ganhar_xp(personagem, monstro["xp"])  # CORRIGIDO: chama ganhar_xp, que também sobe de nível
                 break
             dano_monstro = random.randint(monstro["dano"], monstro["dano-max"])
             personagem["vida"] = max(0, personagem["vida"] - dano_monstro)  # MELHORIA: vida não fica negativa
