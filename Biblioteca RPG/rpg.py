@@ -66,6 +66,14 @@ def ganhar_xp(personagem, xp):
     subir_nivel(personagem)
 
 
+def reviver(personagem):
+    perda_xp = int(personagem["xp"] * 0.1)  # CORRIGIDO: calcula quanto XP será perdido (10% do atual)
+    personagem["xp"] -= perda_xp  # CORRIGIDO: subtrai a perda; antes o XP virava uma tupla
+    personagem["vida"] = personagem["vida_max"] // 2  # MELHORIA: reviver com metade da vida máxima
+    print(f"Você foi revivido com {personagem['vida']} de vida, mas perdeu {perda_xp} pontos de experiência.")  # CORRIGIDO: mostra a perda real
+    print(f"Vida: {personagem['vida']}/{personagem['vida_max']} | XP: {personagem['xp']}/{personagem['xp_proximo_nivel']}")
+
+
 # CORRIGIDO: a função batalha agora fica antes do menu
 def batalha(personagem, monstro):
     print(f"\nVocê encontrou um {monstro['nome']}!")
@@ -108,6 +116,8 @@ while True:
     elif opcao == "4":
         monstro = random.choice(monstros).copy()
         batalha(personagem, monstro)
+        if personagem["vida"] <= 0:
+            reviver(personagem)
     elif opcao == "0":
         print("Até a próxima aventura!")
         break
