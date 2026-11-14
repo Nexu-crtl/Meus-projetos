@@ -21,9 +21,9 @@ inventario = [item_1, item_2, item_3]
 
 # CORRIGIDO: movido para antes do menu
 monstros = [
-    {"nome": "Goblin", "vida": 30, "dano": 5, "dano-max": 10, "xp": 20, "nivel_minimo": 1},
-    {"nome": "Orc", "vida": 50, "dano": 10, "dano-max": 20, "xp": 50, "nivel_minimo": 2},
-    {"nome": "Troll", "vida": 80, "dano": 15, "dano-max": 30, "xp": 100, "nivel_minimo": 3}]
+    {"nome": "Goblin", "vida": 30, "dano": 5, "dano-max": 10, "xp": 20, "nivel_minimo": 1, "chance_loot": 0.5, "loot": {"nome": "Poção de Cura", "tipo": "Consumível", "cura": 20, "quantidade": 1}},
+    {"nome": "Orc", "vida": 50, "dano": 10, "dano-max": 20, "xp": 50, "nivel_minimo": 2, "chance_loot": 0.3, "loot": {"nome": "Espada Longa", "tipo": "Arma", "dano": 15, "quantidade": 1}},
+    {"nome": "Troll", "vida": 80, "dano": 15, "dano-max": 30, "xp": 100, "nivel_minimo": 3, "chance_loot": 0.1, "loot": {"nome": "Armadura de Couro", "tipo": "Armadura", "defesa": 5, "quantidade": 1}}]
 
 
 def mostrar_ficha(personagem):
@@ -78,6 +78,21 @@ def sortear_monstro(personagem):
     disponiveis = [m for m in monstros if personagem["nivel"] >= m["nivel_minimo"]]
     return random.choice(disponiveis).copy()
 
+def adicionar_item(inventario, item):
+    for inv_item in inventario:
+        if inv_item["nome"] == item["nome"]:
+            inv_item["quantidade"] += item.get("quantidade", 1)
+            print(f"Você encontrou {item['quantidade']}x {item['nome']}! Agora você tem {inv_item['quantidade']}.")
+            return
+    inventario.append(item)
+    print(f"Você encontrou {item['quantidade']}x {item['nome']}! Adicionado ao inventário.")
+
+def soltar_loot(personagem, monstro):
+    if random.random() < monstro["chance_loot"]:
+       adicionar_item(inventario, monstro["loot"].copy())
+    else:
+        print(f"O {monstro['nome']} não deixou nenhum item.")
+
 
 # CORRIGIDO: a função batalha agora fica antes do menu
 def batalha(personagem, monstro):
@@ -91,6 +106,7 @@ def batalha(personagem, monstro):
             if monstro["vida"] <= 0:
                 print(f"Você derrotou o {monstro['nome']}!")
                 ganhar_xp(personagem, monstro["xp"])  # CORRIGIDO: chama ganhar_xp, que também sobe de nível
+                soltar_loot(personagem, monstro)
                 break
             dano_monstro = random.randint(monstro["dano"], monstro["dano-max"])
             personagem["vida"] = max(0, personagem["vida"] - dano_monstro)  # MELHORIA: vida não fica negativa
