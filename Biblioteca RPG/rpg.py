@@ -21,9 +21,9 @@ inventario = [item_1, item_2, item_3]
 
 # CORRIGIDO: movido para antes do menu
 monstros = [
-    {"nome": "Goblin", "vida": 30, "dano": 5, "dano-max": 10, "xp": 20},
-    {"nome": "Orc", "vida": 50, "dano": 10, "dano-max": 20, "xp": 50},
-    {"nome": "Troll", "vida": 80, "dano": 15, "dano-max": 30, "xp": 100}]
+    {"nome": "Goblin", "vida": 30, "dano": 5, "dano-max": 10, "xp": 20, "nivel_minimo": 1},
+    {"nome": "Orc", "vida": 50, "dano": 10, "dano-max": 20, "xp": 50, "nivel_minimo": 2},
+    {"nome": "Troll", "vida": 80, "dano": 15, "dano-max": 30, "xp": 100, "nivel_minimo": 3}]
 
 
 def mostrar_ficha(personagem):
@@ -74,6 +74,11 @@ def reviver(personagem):
     print(f"Vida: {personagem['vida']}/{personagem['vida_max']} | XP: {personagem['xp']}/{personagem['xp_proximo_nivel']}")
 
 
+def sortear_monstro(personagem):
+    disponiveis = [m for m in monstros if personagem["nivel"] >= m["nivel_minimo"]]
+    return random.choice(disponiveis).copy()
+
+
 # CORRIGIDO: a função batalha agora fica antes do menu
 def batalha(personagem, monstro):
     print(f"\nVocê encontrou um {monstro['nome']}!")
@@ -114,7 +119,7 @@ while True:
     elif opcao == "3":
         usar_pocao(personagem, inventario)
     elif opcao == "4":
-        monstro = random.choice(monstros).copy()
+        monstro = sortear_monstro(personagem)  # CORRIGIDO: usa a função que filtra os monstros pelo nível
         batalha(personagem, monstro)
         if personagem["vida"] <= 0:
             reviver(personagem)
