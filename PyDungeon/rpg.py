@@ -1,6 +1,6 @@
 import random  # CORRIGIDO: movido para o topo
 
-personagem = {
+personagem_1 = {
     "nome": "Gandalf",
     "classe": "Mago",
     "nivel": 1,
@@ -13,13 +13,42 @@ personagem = {
     "equipado": {"arma": None, "armadura": None}  # MELHORIA: adiciona slots de equipamento
 }
 
+personagem_2 = {
+    "nome": "Aragorn",
+    "classe": "Guerreiro",
+    "nivel": 1,
+    "vida": 15,
+    "vida_max": 15,
+    "mana": 5,
+    "xp": 0,
+    "xp_proximo_nivel": 50,
+    "ouro": 100,
+    "equipado": {"arma": None, "armadura": None}  # MELHORIA: adiciona slots de equipamento
+}
+
+personagem_3 = {
+    "nome": "Legolas",
+    "classe": "Arqueiro",
+    "nivel": 1,
+    "vida": 12,
+    "vida_max": 12,
+    "mana": 8,
+    "xp": 0,
+    "xp_proximo_nivel": 50,
+    "ouro": 100,
+    "equipado": {"arma": None, "armadura": None}  # MELHORIA: adiciona slots de equipamento
+}
+
 
 item_1 = {"nome": "Espada Longa", "tipo": "Arma", "dano": 15, "quantidade": 1}
 item_2 = {"nome": "Poção de Cura", "tipo": "Consumível", "cura": 20, "quantidade": 3}
 item_3 = {"nome": "Armadura de Couro", "tipo": "Armadura", "defesa": 5, "quantidade": 1}
+item_4 = {"nome": "Arco Longo", "tipo": "Arma", "dano": 12, "quantidade": 1}
+item_5 = {"nome": "Poção de Mana", "tipo": "Consumível", "mana": 15, "quantidade": 2}
+item_6 = {"nome": "cajado de fogo", "tipo": "Arma", "dano": 20, "quantidade": 1}
 
 
-inventario = [item_1, item_2, item_3]
+inventario = [item_1, item_2, item_3, item_4, item_5, item_6]
 
 # CORRIGIDO: movido para antes do menu
 monstros = [
@@ -33,6 +62,22 @@ loja = [
     {"nome": "Armadura de Couro", "tipo": "Armadura", "defesa": 5, "preco": 30}
 ]
 
+def selecionar_personagem():
+    print("Escolha seu personagem:")
+    print("1. Gandalf (Mago)")
+    print("2. Aragorn (Guerreiro)")
+    print("3. Legolas (Arqueiro)")
+    escolha = input("Digite 1, 2 ou 3: ")
+    if escolha == "1":
+        return personagem_1.copy()  # CORRIGIDO: retorna uma cópia para não alterar o original
+    elif escolha == "2":
+        return personagem_2.copy()  # CORRIGIDO: retorna uma cópia para não alterar o original
+    elif escolha == "3":
+        return personagem_3.copy()  # CORRIGIDO: retorna uma cópia para não alterar o original
+    else:
+        print("Escolha inválida! Usando Gandalf por padrão.")
+        return personagem_1.copy()
+personagem = selecionar_personagem()
 
 def mostrar_ficha(personagem):
     print(f"=== {personagem['nome']} | {personagem['classe']} | Nível {personagem['nivel']} ===")
@@ -211,21 +256,22 @@ def batalha(personagem, monstro):
 while True:
     print("\n1. Ficha | 2. Inventário | 3. Usar poção | 4. Lutar | 5. Loja | 6. Equipar | 0. Sair")  # CORRIGIDO: mostra a opção 6
     opcao = input("Escolha: ")
-
-    if opcao == "1":
-        mostrar_ficha(personagem)
+    if opcao == "1": 
+        personagem = selecionar_personagem()  # CORRIGIDO: permite escolher o personagem no início
     elif opcao == "2":
-        mostrar_inventario(inventario)
+        mostrar_ficha(personagem)   
     elif opcao == "3":
-        usar_pocao(personagem, inventario)
+        mostrar_inventario(inventario)
     elif opcao == "4":
+        usar_pocao(personagem, inventario)
+    elif opcao == "5":
         monstro = sortear_monstro(personagem)  # CORRIGIDO: usa a função que filtra os monstros pelo nível
         batalha(personagem, monstro)
         if personagem["vida"] <= 0:
             reviver(personagem)
-    elif opcao == "5":
-        mostrar_loja(personagem, loja)
     elif opcao == "6":
+        mostrar_loja(personagem, loja)
+    elif opcao == "7":
         equipar(personagem, inventario)
     elif opcao == "0":
         print("Até a próxima aventura!")
