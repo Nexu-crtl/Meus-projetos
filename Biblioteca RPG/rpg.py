@@ -8,7 +8,8 @@ personagem = {
     "vida_max": 10,
     "mana": 10,
     "xp": 0,
-    "xp_proximo_nivel": 50
+    "xp_proximo_nivel": 50,
+    "ouro": 100
 }
 
 
@@ -21,15 +22,22 @@ inventario = [item_1, item_2, item_3]
 
 # CORRIGIDO: movido para antes do menu
 monstros = [
-    {"nome": "Goblin", "vida": 30, "dano": 5, "dano-max": 10, "xp": 20, "nivel_minimo": 1, "chance_loot": 0.5, "loot": {"nome": "Poção de Cura", "tipo": "Consumível", "cura": 20, "quantidade": 1}},
-    {"nome": "Orc", "vida": 50, "dano": 10, "dano-max": 20, "xp": 50, "nivel_minimo": 2, "chance_loot": 0.3, "loot": {"nome": "Espada Longa", "tipo": "Arma", "dano": 15, "quantidade": 1}},
-    {"nome": "Troll", "vida": 80, "dano": 15, "dano-max": 30, "xp": 100, "nivel_minimo": 3, "chance_loot": 0.1, "loot": {"nome": "Armadura de Couro", "tipo": "Armadura", "defesa": 5, "quantidade": 1}}]
+    {"nome": "Goblin", "vida": 30, "dano": 5, "dano-max": 10, "xp": 20, "ouro": 10, "nivel_minimo": 1, "chance_loot": 0.5, "loot": {"nome": "Poção de Cura", "tipo": "Consumível", "cura": 20, "quantidade": 1}},
+    {"nome": "Orc", "vida": 50, "dano": 10, "dano-max": 20, "xp": 50, "ouro": 25, "nivel_minimo": 2, "chance_loot": 0.3, "loot": {"nome": "Espada Longa", "tipo": "Arma", "dano": 15, "quantidade": 1}},
+    {"nome": "Troll", "vida": 80, "dano": 15, "dano-max": 30, "xp": 100, "ouro": 50, "nivel_minimo": 3, "chance_loot": 0.1, "loot": {"nome": "Armadura de Couro", "tipo": "Armadura", "defesa": 5, "quantidade": 1}}]
+
+loja = [
+    {"nome": "Poção de Cura", "tipo": "Consumível", "cura": 20, "preco": 10},
+    {"nome": "Espada Longa", "tipo": "Arma", "dano": 15, "preco": 50},
+    {"nome": "Armadura de Couro", "tipo": "Armadura", "defesa": 5, "preco": 30}
+]
 
 
 def mostrar_ficha(personagem):
     print(f"=== {personagem['nome']} | {personagem['classe']} | Nível {personagem['nivel']} ===")
     print(f"Vida: {personagem['vida']}/{personagem['vida_max']} | Mana: {personagem['mana']}")
     print(f"XP: {personagem['xp']}/{personagem['xp_proximo_nivel']}")  # MELHORIA: mostra o XP na ficha
+    print(f"Ouro: {personagem['ouro']}")
 
 
 def mostrar_inventario(inventario):
@@ -46,6 +54,31 @@ def usar_pocao(personagem, inventario):
             print(f"Você usou uma poção! Vida: {personagem['vida']}/{personagem['vida_max']}")
             return
     print("Você não tem poções!")
+
+
+def mostrar_loja(personagem, loja):
+    print("\n=== Loja ===")
+    for posicao, item in enumerate(loja, start=1):
+        print(f"{posicao}. {item['nome']} (Tipo: {item['tipo']}, Preço: {item['preco']} ouro)")
+    escolha = input("Digite o número do item que deseja comprar ou '0' para sair: ")
+    if escolha.isdigit():
+        escolha = int(escolha)
+        if 1 <= escolha <= len(loja):
+            item = loja[escolha - 1]
+            if personagem["ouro"] >= item["preco"]:
+                personagem["ouro"] -= item["preco"]
+                novo_item = item.copy()  # CORRIGIDO: copia o produto inteiro (cura, dano, defesa...)
+                novo_item["quantidade"] = 1
+                adicionar_item(inventario, novo_item)
+                print(f"Você comprou {item['nome']}! Ouro restante: {personagem['ouro']}")
+            else:
+                print("Você não tem ouro suficiente!")
+        elif escolha == 0:
+            print("Saindo da loja.")
+        else:
+            print("Escolha inválida!")
+    else:
+        print("Escolha inválida!")
 
 
 def subir_nivel(personagem):
@@ -78,6 +111,7 @@ def sortear_monstro(personagem):
     disponiveis = [m for m in monstros if personagem["nivel"] >= m["nivel_minimo"]]
     return random.choice(disponiveis).copy()
 
+
 def adicionar_item(inventario, item):
     for inv_item in inventario:
         if inv_item["nome"] == item["nome"]:
@@ -87,9 +121,10 @@ def adicionar_item(inventario, item):
     inventario.append(item)
     print(f"Você encontrou {item['quantidade']}x {item['nome']}! Adicionado ao inventário.")
 
+
 def soltar_loot(personagem, monstro):
     if random.random() < monstro["chance_loot"]:
-       adicionar_item(inventario, monstro["loot"].copy())
+        adicionar_item(inventario, monstro["loot"].copy())
     else:
         print(f"O {monstro['nome']} não deixou nenhum item.")
 
@@ -106,14 +141,16 @@ def batalha(personagem, monstro):
             if monstro["vida"] <= 0:
                 print(f"Você derrotou o {monstro['nome']}!")
                 ganhar_xp(personagem, monstro["xp"])  # CORRIGIDO: chama ganhar_xp, que também sobe de nível
+                personagem["ouro"] += monstro["ouro"]  # MELHORIA: adiciona ouro ao personagem
+                print(f"Você saqueou {monstro['ouro']} de ouro!")  # MELHORIA: mostra o ouro ganho
                 soltar_loot(personagem, monstro)
                 break
             dano_monstro = random.randint(monstro["dano"], monstro["dano-max"])
             personagem["vida"] = max(0, personagem["vida"] - dano_monstro)  # MELHORIA: vida não fica negativa
             print(f"O {monstro['nome']} atacou você causando {dano_monstro} de dano! Vida restante: {personagem['vida']}/{personagem['vida_max']}")
-        elif acao == "2":
+        elif acao == "2":  # CORRIGIDO: ação de usar poção na batalha
             usar_pocao(personagem, inventario)
-        elif acao == "3":
+        elif acao == "3":  # CORRIGIDO: ação de fugir da batalha
             print("Você fugiu da batalha!")
             break
         else:
@@ -125,7 +162,7 @@ def batalha(personagem, monstro):
 
 # Programa principal
 while True:
-    print("\n1. Ficha | 2. Inventário | 3. Usar poção | 4. Lutar | 0. Sair")  # CORRIGIDO: opção 4
+    print("\n1. Ficha | 2. Inventário | 3. Usar poção | 4. Lutar | 5. Loja | 0. Sair")  # CORRIGIDO: opção 4
     opcao = input("Escolha: ")
 
     if opcao == "1":
@@ -139,6 +176,8 @@ while True:
         batalha(personagem, monstro)
         if personagem["vida"] <= 0:
             reviver(personagem)
+    elif opcao == "5":
+        mostrar_loja(personagem, loja)
     elif opcao == "0":
         print("Até a próxima aventura!")
         break
