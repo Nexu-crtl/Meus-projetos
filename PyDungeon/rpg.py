@@ -1,7 +1,7 @@
 import random  # CORRIGIDO: movido para o topo
 
 personagem_1 = {
-    "nome": "Gandalf",
+    "nome": (nomeie_personagem := input("Digite o nome do seu personagem: ")),  # CORRIGIDO: solicita o nome do personagem
     "classe": "Mago",
     "nivel": 1,
     "vida": 10,
@@ -14,7 +14,7 @@ personagem_1 = {
 }
 
 personagem_2 = {
-    "nome": "Aragorn",
+    "nome": (input("Digite o nome do seu personagem: ")),  # CORRIGIDO: solicita o nome do personagem
     "classe": "Guerreiro",
     "nivel": 1,
     "vida": 15,
@@ -27,7 +27,7 @@ personagem_2 = {
 }
 
 personagem_3 = {
-    "nome": "Legolas",
+    "nome": (input("Digite o nome do seu personagem: ")),  # CORRIGIDO: solicita o nome do personagem
     "classe": "Arqueiro",
     "nivel": 1,
     "vida": 12,
@@ -64,9 +64,9 @@ loja = [
 
 def selecionar_personagem():
     print("Escolha seu personagem:")
-    print("1. Gandalf (Mago)")
-    print("2. Aragorn (Guerreiro)")
-    print("3. Legolas (Arqueiro)")
+    print(personagem_1["nome"], "(Mago)")
+    print(personagem_2["nome"], "(Guerreiro)")
+    print(personagem_3["nome"], "(Arqueiro)")
     escolha = input("Digite 1, 2 ou 3: ")
     if escolha == "1":
         return personagem_1.copy()  # CORRIGIDO: retorna uma cópia para não alterar o original
@@ -78,6 +78,7 @@ def selecionar_personagem():
         print("Escolha inválida! Usando Gandalf por padrão.")
         return personagem_1.copy()
 personagem = selecionar_personagem()
+nomeie_personagem(personagem)
 
 def mostrar_ficha(personagem):
     print(f"=== {personagem['nome']} | {personagem['classe']} | Nível {personagem['nivel']} ===")
