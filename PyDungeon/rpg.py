@@ -9,7 +9,8 @@ personagem = {
     "mana": 10,
     "xp": 0,
     "xp_proximo_nivel": 50,
-    "ouro": 100
+    "ouro": 100,
+    "equipado": {"arma": None, "armadura": None}  # MELHORIA: adiciona slots de equipamento
 }
 
 
@@ -38,6 +39,7 @@ def mostrar_ficha(personagem):
     print(f"Vida: {personagem['vida']}/{personagem['vida_max']} | Mana: {personagem['mana']}")
     print(f"XP: {personagem['xp']}/{personagem['xp_proximo_nivel']}")  # MELHORIA: mostra o XP na ficha
     print(f"Ouro: {personagem['ouro']}")
+    print(f"Arma: {personagem['equipado']['arma'] or 'nenhuma'} | Armadura: {personagem['equipado']['armadura'] or 'nenhuma'}")  # MELHORIA: mostra o equipamento
 
 
 def mostrar_inventario(inventario):
@@ -79,6 +81,49 @@ def mostrar_loja(personagem, loja):
             print("Escolha inválida!")
     else:
         print("Escolha inválida!")
+
+
+def buscar_item(inventario, nome_item):
+    for item in inventario:
+        if item["nome"] == nome_item:
+            return item
+    return None
+
+
+def bonus_equipado(personagem, inventario, slot, atributo):
+    nome_item = personagem["equipado"][slot]  # CORRIGIDO: o que está guardado é o NOME do item (texto)
+    if nome_item:
+        item = buscar_item(inventario, nome_item)  # CORRIGIDO: busca o item de verdade no inventário
+        if item:
+            return item.get(atributo, 0)
+    return 0
+
+
+def equipar(personagem, inventario):
+    equipaveis = [item for item in inventario if item["tipo"] in ("Arma", "Armadura")]
+    if not equipaveis:
+        print("Você não tem nada para equipar!")
+        return
+
+    print("\n=== Equipar ===")
+    for posicao, item in enumerate(equipaveis, start=1):
+        print(f"{posicao}. {item['nome']} ({item['tipo']})")
+
+    escolha = input("Número do item (0 para voltar): ")
+    if not escolha.isdigit():
+        print("Escolha inválida!")
+        return
+    escolha = int(escolha)
+    if escolha == 0:
+        return
+    if escolha > len(equipaveis):
+        print("Escolha inválida!")
+        return
+
+    item = equipaveis[escolha - 1]
+    slot = "arma" if item["tipo"] == "Arma" else "armadura"
+    personagem["equipado"][slot] = item["nome"]
+    print(f"Você equipou {item['nome']}!")
 
 
 def subir_nivel(personagem):
@@ -135,7 +180,7 @@ def batalha(personagem, monstro):
     while monstro["vida"] > 0 and personagem["vida"] > 0:
         acao = input("Escolha sua ação: (1) Atacar | (2) Usar poção | (3) Fugir: ")
         if acao == "1":
-            dano_personagem = random.randint(10, 20)
+            dano_personagem = random.randint(10, 20) + bonus_equipado(personagem, inventario, "arma", "dano")  # MELHORIA: adiciona bônus de arma equipada
             monstro["vida"] -= dano_personagem
             print(f"Você atacou o {monstro['nome']} causando {dano_personagem} de dano!")
             if monstro["vida"] <= 0:
@@ -146,6 +191,8 @@ def batalha(personagem, monstro):
                 soltar_loot(personagem, monstro)
                 break
             dano_monstro = random.randint(monstro["dano"], monstro["dano-max"])
+            defesa = bonus_equipado(personagem, inventario, "armadura", "defesa")  # MELHORIA: adiciona bônus de armadura equipada
+            dano_monstro = max(0, dano_monstro - defesa)
             personagem["vida"] = max(0, personagem["vida"] - dano_monstro)  # MELHORIA: vida não fica negativa
             print(f"O {monstro['nome']} atacou você causando {dano_monstro} de dano! Vida restante: {personagem['vida']}/{personagem['vida_max']}")
         elif acao == "2":  # CORRIGIDO: ação de usar poção na batalha
@@ -162,7 +209,7 @@ def batalha(personagem, monstro):
 
 # Programa principal
 while True:
-    print("\n1. Ficha | 2. Inventário | 3. Usar poção | 4. Lutar | 5. Loja | 0. Sair")  # CORRIGIDO: opção 4
+    print("\n1. Ficha | 2. Inventário | 3. Usar poção | 4. Lutar | 5. Loja | 6. Equipar | 0. Sair")  # CORRIGIDO: mostra a opção 6
     opcao = input("Escolha: ")
 
     if opcao == "1":
@@ -178,6 +225,8 @@ while True:
             reviver(personagem)
     elif opcao == "5":
         mostrar_loja(personagem, loja)
+    elif opcao == "6":
+        equipar(personagem, inventario)
     elif opcao == "0":
         print("Até a próxima aventura!")
         break
